@@ -9,3 +9,7 @@ To use BathMat
 2. Apply short term EQS values. Time must be in hours. EQSconc and TreatmentConc must be in ng/l.
  
 3. Use function BathMat_ShortTermModel to calculate maximum chemical quantities
+
+
+Additional code is provided below for a Long-term Model (Gillibrand and Turrell 1999). However, this is not functional at this time. 
+

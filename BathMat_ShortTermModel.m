@@ -1,7 +1,14 @@
 function [ModelOutput] = BathMat_ShortTermModel(Chem,Modellength,Conc,TreatmentConc,Umean,SiteDepth,Dist2Shore,CageVolume)
 %UNTITLED3 Summary of this function goes here
 %   Detailed explanation goes here
-
+%% Input variable units
+%Conc = ng/l
+%TreatmentConc = ng/l
+%Umean = m/s
+%SiteDepth = m
+%Dist2Shore = km
+%CageVolume = m^3
+%% 
 T = Modellength; % hours
 t=T*3600;
 k = 0.1;
@@ -21,11 +28,13 @@ end
 %v2 = pi*(2*k*t)^0.5*longAdvec*mixingDepth;
 %Vol = min([v1, v2]);
 Area = Vol/mixingDepth;
+Vol_lts = (Area*mixingDepth)*1000; %convert volume to lts
+CageVolume_lts = CageVolume*1000; %convert volume to lts
 
-consentMass  = Vol*Conc/1000000;
-meanConc = CageVolume*TreatmentConc/(Area*mixingDepth);
+consentMass  = Vol*Conc/1000000; %g
+meanConc = CageVolume_lts*TreatmentConc/Vol_lts;
 peakConc = meanConc*(1/0.6);
-treatmentVol = Area*mixingDepth*Conc/TreatmentConc;
+treatmentVol = (Area*mixingDepth)*Conc/TreatmentConc;
 
 noCagesTreated = treatmentVol/CageVolume;
 areaExceedsEQS = 0.5*Area*0.000001;

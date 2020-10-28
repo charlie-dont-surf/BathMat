@@ -5,43 +5,58 @@
 SiteName = 'Chalmers Hope';
 SiteCenter = [328735, 1001311];
 NoCages = 12;
-CageCirc = 120.0088;
-%CageCirc = 120;
-CageDepth = 12;
+CageCirc = 120;
 
 SiteDepth = 30;
 Dist2Shore = 0.49;
-TreatmentDepth = 1.47;
 
+TreatmentDepth = 10; %either cone depth or flat depth %3.4m for flat or 10m for cone
+cageShape = 'cone'; %flat or cone or wellboat
+wellboatCapacity = 1000; %m^3
+
+%Flow Parameters
 Umean = 0.122;
-Upara = 0.004;
-Vpara = 0.012;
-Uamp = 0.183;
-Vamp = 0.094;
+%Upara = 0.004;
+%Vpara = 0.012;
+%Uamp = 0.183;
+%Vamp = 0.094;
 
+
+%Initail concentrations
 CageArea = pi*(CageCirc/(2*pi))^2;
-CageVolume = CageArea*TreatmentDepth;
+switch cageShape
+    case {'flat'}
+        CageVolume = CageArea * TreatmentDepth;
+    case{'cone'}
+        CageVolume = CageArea * TreatmentDepth/3;
+    case{'wellboat'}
+        CageVolume = wellboatCapacity;
+end  
+CageVolumeWellBoat = wellboatCapacity;
+
 
 %% Short-term Model 1
 %Azamethiphos
 AzaEQS.Time = 3;                %hrs
-AzaEQS.EQSconc = 250;          %ng/l
+AzaEQS.EQSconc = 250;           %ng/l
 AzaEQS.TreatmentConc = 100000; %ng/l
 %Cypermethrin
 CypEQS.Time = 3;                %hrs
 CypEQS.EQSconc = 0.06;          %ng/l
 CypEQS.TreatmentConc = 5000;    %ng/l
-
 %Deltamethrin
 DelEQS.Time = 3;                %hrs
 DelEQS.EQSconc = 9;             %ng/l
 DelEQS.TreatmentConc = 2000;    %ng/l
 
 ModelOutput1 = BathMat_ShortTermModel('AZA',AzaEQS.Time, AzaEQS.EQSconc, AzaEQS.TreatmentConc, Umean,SiteDepth,Dist2Shore,CageVolume);
-ModelOutput2 = BathMat_ShortTermModel('CYP',CypEQS.Time, CypEQS.EQSconc, CypEQS.TreatmentConc, Umean,SiteDepth,Dist2Shore,CageVolume);
-ModelOutput3 = BathMat_ShortTermModel('DEL',DelEQS.Time, DelEQS.EQSconc, DelEQS.TreatmentConc, Umean,SiteDepth,Dist2Shore,CageVolume);
+ModelOutput2 = BathMat_ShortTermModel('AZA-WellBoat',AzaEQS.Time, AzaEQS.EQSconc, AzaEQS.TreatmentConc, Umean,SiteDepth,Dist2Shore,CageVolumeWellBoat);
+ModelOutput3 = BathMat_ShortTermModel('CYP',CypEQS.Time, CypEQS.EQSconc, CypEQS.TreatmentConc, Umean,SiteDepth,Dist2Shore,CageVolume);
+ModelOutput4 = BathMat_ShortTermModel('CYP-WellBoat',CypEQS.Time, CypEQS.EQSconc, CypEQS.TreatmentConc, Umean,SiteDepth,Dist2Shore,CageVolumeWellBoat);
+ModelOutput5 = BathMat_ShortTermModel('DEL',DelEQS.Time, DelEQS.EQSconc, DelEQS.TreatmentConc, Umean,SiteDepth,Dist2Shore,CageVolume);
+ModelOutput6 = BathMat_ShortTermModel('DEL-WellBoat',DelEQS.Time, DelEQS.EQSconc, DelEQS.TreatmentConc, Umean,SiteDepth,Dist2Shore,CageVolumeWellBoat);
 
-BathMat1 = [ModelOutput1;ModelOutput2;ModelOutput3];
+BathMat1 = [ModelOutput1;ModelOutput2;ModelOutput3;ModelOutput4;ModelOutput5;ModelOutput6];
 head(BathMat1)
 
 %Calculate treatable volume from 24hr Aza run
