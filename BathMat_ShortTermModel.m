@@ -30,7 +30,7 @@ end
 %Vol = min([v1, v2]);
 Area = Vol/mixingDepth;
 Vol_lts = (Area*mixingDepth)*1000; %convert volume to lts
-CageVolume_lts = Input.CageVolume*1000; %convert volume to lts
+CageVolume_lts = CageVolume*1000; %convert volume to lts
 
 consentMass  = Vol*ChemEQS.EQSconc/1000000; %g
 meanConc = CageVolume_lts*ChemEQS.TreatmentConc/Vol_lts;
