@@ -64,16 +64,8 @@ Logfilename = 'BathMat_Log_ChalmersHope.txt';
 [log] = WriteBathMatLogFile(FolderPath,Logfilename,Input,BathMat1,AzaEQS,CypEQS,DelEQS);
 
 
-%Cypermethrin
+%Cypermethrin - if CypEQS.EQSconc is reduced by a factor of 267
 CypMass = ModelOutput3.consentMass/267;
-(CypEQS.EQSconc/267)/CypEQS.TreatmentConc
-
-CypMass = ModelOutput3.consentMass/267;
-(CypMass*1000000)/CypEQS.TreatmentConc
-consentMass  = Vol*CypEQS.EQSconc/1000000; %g
-meanConc = CageVolume_lts*ChemEQS.TreatmentConc/Vol_lts;
-peakConc = meanConc*(1/0.6);
-treatmentVol = (Area*mixingDepth)*ChemEQS.EQSconc/ChemEQS.TreatmentConc;
 
 
 %Calculate treatable volume from 24hr Aza run
