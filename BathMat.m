@@ -1,21 +1,21 @@
 %% BathMat
 %Tool for modelling bath treatments
-
 %% Input parameters
-SiteName = 'Chalmers Hope';
-SiteCenter = [328735, 1001311];
-NoCages = 12;
-CageCirc = 120;
+FolderPath = 'C:\Users\charles.greenwood\NewDepomod MATLAB\Orkney\ChalmersHope\SEPA\ChalmersHope\Modelling\Bath\BathAuto';
+Input.SiteName = 'Chalmers Hope';
+Input.SiteCenter = [328735, 1001311];
+Input.NoCages = 12;
+Input.CageCirc = 120;
 
-SiteDepth = 30;
-Dist2Shore = 0.49;
+Input.SiteDepth = 30;
+Input.Dist2Shore = 0.49;
 
-TreatmentDepth = 10; %either cone depth or flat depth %3.4m for flat or 10m for cone
-cageShape = 'cone'; %flat or cone or wellboat
-wellboatCapacity = 1000; %m^3
+Input.TreatmentDepth = 10; %either cone depth or flat depth %3.4m for flat or 10m for cone
+Input.cageShape = 'cone'; %flat or cone or wellboat
+Input.wellboatCapacity = 1000; %m^3
 
 %Flow Parameters
-Umean = 0.122;
+Input.Umean = 0.122;
 %Upara = 0.004;
 %Vpara = 0.012;
 %Uamp = 0.183;
@@ -23,16 +23,16 @@ Umean = 0.122;
 
 
 %Initail concentrations
-CageArea = pi*(CageCirc/(2*pi))^2;
-switch cageShape
+Input.CageArea = pi*(Input.CageCirc/(2*pi))^2;
+switch Input.cageShape
     case {'flat'}
-        CageVolume = CageArea * TreatmentDepth;
+        Input.CageVolume = Input.CageArea * Input.TreatmentDepth;
     case{'cone'}
-        CageVolume = CageArea * TreatmentDepth/3;
+        Input.CageVolume = Input.CageArea * Input.TreatmentDepth/3;
     case{'wellboat'}
-        CageVolume = wellboatCapacity;
+        Input.CageVolume = Input.wellboatCapacity;
 end  
-CageVolumeWellBoat = wellboatCapacity;
+Input.CageVolumeWellBoat = Input.wellboatCapacity;
 
 
 %% Short-term Model 1
@@ -41,31 +41,44 @@ AzaEQS.Time = 3;                %hrs
 AzaEQS.EQSconc = 250;           %ng/l
 AzaEQS.TreatmentConc = 100000; %ng/l
 %Cypermethrin
-CypEQS.Time = 3;                %hrs
-CypEQS.EQSconc = 0.06;          %ng/l
+CypEQS.Time = 6;                %hrs
+CypEQS.EQSconc = 16/267;            %ng/l
 CypEQS.TreatmentConc = 5000;    %ng/l
 %Deltamethrin
-DelEQS.Time = 3;                %hrs
-DelEQS.EQSconc = 9;             %ng/l
+DelEQS.Time = 6;                %hrs
+DelEQS.EQSconc = 6;             %ng/l
 DelEQS.TreatmentConc = 2000;    %ng/l
 
-ModelOutput1 = BathMat_ShortTermModel('AZA',AzaEQS.Time, AzaEQS.EQSconc, AzaEQS.TreatmentConc, Umean,SiteDepth,Dist2Shore,CageVolume);
-ModelOutput2 = BathMat_ShortTermModel('AZA-WellBoat',AzaEQS.Time, AzaEQS.EQSconc, AzaEQS.TreatmentConc, Umean,SiteDepth,Dist2Shore,CageVolumeWellBoat);
-ModelOutput3 = BathMat_ShortTermModel('CYP',CypEQS.Time, CypEQS.EQSconc, CypEQS.TreatmentConc, Umean,SiteDepth,Dist2Shore,CageVolume);
-ModelOutput4 = BathMat_ShortTermModel('CYP-WellBoat',CypEQS.Time, CypEQS.EQSconc, CypEQS.TreatmentConc, Umean,SiteDepth,Dist2Shore,CageVolumeWellBoat);
-ModelOutput5 = BathMat_ShortTermModel('DEL',DelEQS.Time, DelEQS.EQSconc, DelEQS.TreatmentConc, Umean,SiteDepth,Dist2Shore,CageVolume);
-ModelOutput6 = BathMat_ShortTermModel('DEL-WellBoat',DelEQS.Time, DelEQS.EQSconc, DelEQS.TreatmentConc, Umean,SiteDepth,Dist2Shore,CageVolumeWellBoat);
+ModelOutput1 = BathMat_ShortTermModel('AZA',Input,AzaEQS,Input.CageVolume);
+ModelOutput2 = BathMat_ShortTermModel('AZA-Wellboat',Input,AzaEQS,Input.CageVolumeWellBoat);
+ModelOutput3 = BathMat_ShortTermModel('CYP',Input,CypEQS,Input.CageVolume);
+ModelOutput4 = BathMat_ShortTermModel('CYP-Wellboat',Input,CypEQS,Input.CageVolumeWellBoat);
+ModelOutput5 = BathMat_ShortTermModel('DEL',Input,DelEQS,Input.CageVolume);
+ModelOutput6 = BathMat_ShortTermModel('DEL-Wellboat',Input,DelEQS,Input.CageVolumeWellBoat);
 
 BathMat1 = [ModelOutput1;ModelOutput2;ModelOutput3;ModelOutput4;ModelOutput5;ModelOutput6];
 head(BathMat1)
 
+%Write log file 
+Logfilename = 'BathMat_Log_ChalmersHope.txt';
+[log] = WriteBathMatLogFile(FolderPath,Logfilename,Input,BathMat1,AzaEQS,CypEQS,DelEQS);
+
+
+%Cypermethrin
+CypMass = ModelOutput3.consentMass/267;
+(CypEQS.EQSconc/267)/CypEQS.TreatmentConc
+
+CypMass = ModelOutput3.consentMass/267;
+(CypMass*1000000)/CypEQS.TreatmentConc
+consentMass  = Vol*CypEQS.EQSconc/1000000; %g
+meanConc = CageVolume_lts*ChemEQS.TreatmentConc/Vol_lts;
+peakConc = meanConc*(1/0.6);
+treatmentVol = (Area*mixingDepth)*ChemEQS.EQSconc/ChemEQS.TreatmentConc;
+
+
 %Calculate treatable volume from 24hr Aza run
 AzaTreatmentMass = 168.5;
 AzatreatmentVol = AzaTreatmentMass*10;
-
-
-
-
 
 %%
 % T = 3; % hours
